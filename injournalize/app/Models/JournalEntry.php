@@ -11,15 +11,18 @@ class JournalEntry extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'title', 'content', 'date', 'mood'
+        'user_id', 'title', 'content', 'date', 'mood',
     ];
 
-    protected $dates = ['date', 'deleted_at']; // <<< important!
+    protected $casts = [
+        'date' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
 
     // Optional: mood color helper
     public function getMoodColorAttribute()
     {
-        return match($this->mood) {
+        return match ($this->mood) {
             'happy' => 'yellow',
             'sad' => 'blue',
             'angry' => 'red',

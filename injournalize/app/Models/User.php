@@ -2,20 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable;
 
-    protected $fillable = ['name','avatar','password'];
+    protected $fillable = ['name', 'avatar', 'password'];
+
     protected $hidden = ['password', 'remember_token'];
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            // Cascade delete journal entries
+            if ($user->isForceDeleting()) {
+                // Permanently delete journals
+                $user->journalEntries()->forceDelete();
+            } else {
+                // Soft delete journals
+                $user->journalEntries()->delete();
+            }
+        });
+    }
 
     public function setPasswordAttribute($value)
     {

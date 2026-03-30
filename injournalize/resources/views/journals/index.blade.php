@@ -10,6 +10,35 @@
 @if(session('info'))
     <div class="alert alert-info">{{ session('info') }}</div>
 @endif
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
+
+<!-- Active User Display -->
+@if($activeUser)
+    <p><strong>Active user:</strong> {{ $activeUser->name }}</p>
+@endif
+
+<!-- Search & Filter Form -->
+<form method="GET" action="{{ route('journals.index') }}" class="mb-3 d-flex gap-2 align-items-center">
+    <input 
+        type="text" 
+        name="search" 
+        placeholder="Search journals..." 
+        value="{{ request('search') }}"
+        class="form-control"
+    >
+    <select name="mood" class="form-select">
+        <option value="">All Moods</option>
+        <option value="happy" {{ request('mood') == 'happy' ? 'selected' : '' }}>Happy</option>
+        <option value="sad" {{ request('mood') == 'sad' ? 'selected' : '' }}>Sad</option>
+        <option value="angry" {{ request('mood') == 'angry' ? 'selected' : '' }}>Angry</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Search / Filter</button>
+    @if(request('search') || request('mood'))
+        <a href="{{ route('journals.index') }}" class="btn btn-secondary">Clear</a>
+    @endif
+</form>
 
 <!-- Active Journals -->
 <h4>Active Journals</h4>
@@ -29,11 +58,10 @@
     @foreach($journals as $journal)
         <tr>
             <td>{{ $journal->title }}</td>
-            <td>{{ \Carbon\Carbon::parse($journal->date)->format('Y-m-d') }}</td>
+            <td>{{ $journal->date->format('Y-m-d') }}</td>
             <td>
-                <span class="badge" 
-                      style="background-color: {{ $journal->mood_color ?? '#ccc' }}">
-                      {{ ucfirst($journal->mood) }}
+                <span class="badge" style="background-color: {{ $journal->mood_color ?? '#ccc' }}">
+                    {{ ucfirst($journal->mood) }}
                 </span>
             </td>
             <td>
@@ -42,8 +70,7 @@
                 <form action="{{ route('journals.destroy', $journal->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger" 
-                            onclick="return confirm('Soft delete this journal?')">Delete</button>
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Soft delete this journal?')">Delete</button>
                 </form>
             </td>
         </tr>
@@ -70,11 +97,10 @@
     @foreach($trashedJournals as $journal)
         <tr>
             <td>{{ $journal->title }}</td>
-            <td>{{ \Carbon\Carbon::parse($journal->date)->format('Y-m-d') }}</td>
+            <td>{{ $journal->date->format('Y-m-d') }}</td>
             <td>
-                <span class="badge" 
-                      style="background-color: {{ $journal->mood_color ?? '#ccc' }}">
-                      {{ ucfirst($journal->mood) }}
+                <span class="badge" style="background-color: {{ $journal->mood_color ?? '#ccc' }}">
+                    {{ ucfirst($journal->mood) }}
                 </span>
             </td>
             <td>
@@ -89,8 +115,7 @@
                 <form action="{{ route('journals.hardDelete', $journal->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger" 
-                            onclick="return confirm('Permanently delete this journal?')">Delete Permanently</button>
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Permanently delete this journal?')">Delete Permanently</button>
                 </form>
             </td>
         </tr>
